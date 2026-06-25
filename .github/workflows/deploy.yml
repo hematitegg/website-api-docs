@@ -1,0 +1,60 @@
+name: Build & deploy API docs
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: "API base URL to read the manifest from"
+        type: string
+        default: "https://api.hematite.gg"
+        required: true
+  schedule:
+    # Rebuild every Monday at 03:00 UTC so docs drift from the live API is bounded.
+    - cron: "0 3 * * 1"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Generate static docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build docs
+        env:
+          API_URL: ${{ inputs.api_url || 'https://api.hematite.gg' }}
+        run: bun run build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deploy
+        uses: actions/deploy-pages@v4
