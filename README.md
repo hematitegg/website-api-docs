@@ -48,8 +48,27 @@ In the repo settings:
 1. **Settings → Pages → Build and deployment → Source**: select **GitHub Actions**.
 2. Run the workflow once via the **Actions** tab. The first deploy creates the
    `github-pages` environment automatically.
-3. Optional: point a custom domain (e.g. `docs.hematite.gg`) at Pages and add
-   a `CNAME` file under `public/` — or set it once in **Settings → Pages**.
+
+## Custom domain (`api-docs.hematite.gg`)
+
+The site is served at <https://api-docs.hematite.gg>. Two pieces wire that up:
+
+1. **DNS** — a `CNAME` record at the registrar:
+
+   | Type  | Name       | Value                  |
+   |-------|------------|------------------------|
+   | CNAME | `api-docs` | `<owner>.github.io`    |
+
+   Replace `<owner>` with the GitHub user/org that owns the repo. On Cloudflare,
+   keep this **DNS-only** (gray cloud) at least until GitHub finishes the
+   initial HTTPS provisioning.
+
+2. **`CNAME` file** at the repo root containing the domain. The build script
+   copies it into `dist/` on every build, and `actions/deploy-pages` applies
+   it automatically — no need to set the domain manually in Settings.
+
+After the first deploy, tick **Settings → Pages → Enforce HTTPS** once the
+checkbox becomes available (it takes a few minutes after DNS resolves).
 
 ## How it works
 

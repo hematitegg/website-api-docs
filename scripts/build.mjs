@@ -65,4 +65,9 @@ console.log(
 step("Writing .nojekyll");
 fs.writeFileSync(path.join(DIST, ".nojekyll"), "");
 
+if (fs.existsSync("CNAME")) {
+  step("Copying CNAME (custom domain) into dist/");
+  fs.copyFileSync("CNAME", path.join(DIST, "CNAME"));
+}
+
 console.log("\nDone. Output in ./dist");
